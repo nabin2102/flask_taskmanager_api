@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        /* Add your CSS styles here */
+    </style>
+</head>
+<body>
+    <h1>Login</h1>
+    <form id="loginForm">
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button type="submit">Login</button>
+    </form>
+    <div id="message"></div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            let email = document.getElementById('email').value;
+            let password = document.getElementById('password').value;
+
+            fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, password })
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Invalid email or password');
+                }
+            })
+            .then(data => {
+                localStorage.setItem('accessToken', data.access_token);
+                fetch('/dashboard', {
+                    headers: {
+                        'Authorization': 'Bearer ' + data.access_token
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.href = '/dashboard';
+                    } else {
+                        throw new Error('Failed to access dashboard');
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('message').textContent = error.message;
+                });
+            })
+            .catch(error => {
+                document.getElementById('message').textContent = error.message;
+            });
+        });
+           
+    </script>
+</body>
+</html>
